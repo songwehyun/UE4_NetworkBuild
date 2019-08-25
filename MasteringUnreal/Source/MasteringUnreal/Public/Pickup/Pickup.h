@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "BaseCharacter.h"
 #include "Pickup.generated.h"
 
 class UStaticMeshComponent;
 class USphereComponent;
+class ABaseCharacter;
 /*
 UFUNCTION매크로를 사용하면
 블루프린트에서 사용가능하게 하기위해

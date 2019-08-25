@@ -2,7 +2,7 @@
 
 
 #include "Pickup_Coin.h"
-
+#include "BaseCharacter.h"
 APickup_Coin::APickup_Coin()
 {
 
@@ -10,7 +10,7 @@ APickup_Coin::APickup_Coin()
 
 void APickup_Coin::CollectPickup_Implementation(ABaseCharacter* Character)
 {
-	if (Role == ROLE_Authority) return;
+	if (Role != ROLE_Authority) return;
 
 	if (Character)
 	{

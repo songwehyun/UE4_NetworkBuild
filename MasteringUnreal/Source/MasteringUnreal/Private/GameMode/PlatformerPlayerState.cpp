@@ -10,6 +10,7 @@ APlatformerPlayerState::APlatformerPlayerState()
 	MaxHealth = 3;
 	CurrentHealth = MaxHealth;
 	NumberOfDeaths = 0;
+	SelectedPowerup = nullptr;
 }
 
 /*
@@ -26,6 +27,14 @@ void APlatformerPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty
 	DOREPLIFETIME(APlatformerPlayerState, CurrentHealth);
 	DOREPLIFETIME(APlatformerPlayerState, NumberOfCoinCollected);
 	DOREPLIFETIME(APlatformerPlayerState, NumberOfDeaths);
+	DOREPLIFETIME(APlatformerPlayerState, SelectedPowerup);
+}
+
+void  APlatformerPlayerState::ReceiveDamage(int amount)
+{
+	CurrentHealth -= amount;
+
+	CurrentHealth = FMath::Clamp(CurrentHealth, 0, MaxHealth);
 }
 
 void APlatformerPlayerState::CollectCoin()

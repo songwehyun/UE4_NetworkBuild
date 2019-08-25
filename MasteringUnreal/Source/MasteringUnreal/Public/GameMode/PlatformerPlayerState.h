@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
+#include "Powerup.h"
 #include "PlatformerPlayerState.generated.h"
 
 /**
@@ -23,10 +24,16 @@ class MASTERINGUNREAL_API APlatformerPlayerState : public APlayerState
 public:
 	APlatformerPlayerState();
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category = "Player State")
+		APowerup* SelectedPowerup;
+
 	UFUNCTION(BlueprintCallable, Category = "Player State")
 		void CollectCoin();
 	UFUNCTION(BlueprintCallable, Category = "Player State")
 		void CollectHeart();
+
+	UFUNCTION(BlueprintCallable, Category = "Player State")
+		void ReceiveDamage(int amount);
 protected:
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Platformer Player State")
 		int NumberOfCoinCollected;

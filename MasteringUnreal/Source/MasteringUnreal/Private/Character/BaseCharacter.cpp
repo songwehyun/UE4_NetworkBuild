@@ -3,6 +3,7 @@
 
 #include "BaseCharacter.h"
 #include "PlatformerPlayerState.h"
+#include "UnrealNetwork.h"
 #include "Engine/Classes/GameFramework/SpringArmComponent.h"
 #include "Engine/Classes/Camera/CameraComponent.h"
 #include "Engine/Classes/Components/ArrowComponent.h"
@@ -54,6 +55,120 @@ ABaseCharacter::ABaseCharacter()
 	GetCharacterMovement()->JumpZVelocity = 1000.0f;
 	GetCharacterMovement()->GravityScale = 2.0f;
 	GetCharacterMovement()->AirControl = 0.8f;
+
+	//파워업이 선택되지 않은채로 시작. -1로 초기화시킴
+	SelectedPowerupIndex = -1;
+
+	//배열 초기화.
+	PowerUps = TArray<APowerup*>();
+}
+
+
+/*
+캐릭터가 선택된 파워업기능을 사용할때 애니매이션도 같이 실행되어야하는데,
+파워업을 가지고있다면 버튼을 누르는등 트리거가 켜져서 파워업기능을 사용하게 되었을때 애니메이션 이벤트 트리거가
+Firing애니매이션을 시작하게 될것이고, 이를위해 파워업 서버함수가 사용될것이다.
+이는 서버에서 미리 결정해야 할것이며 이를 위해서 bIsFiring 변수와 서버함수들을 사용하고 있다.
+*/
+void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	//모든 캐릭터에 레플리케이트
+	DOREPLIFETIME(ABaseCharacter, bIsFiring);
+}
+
+
+void ABaseCharacter::UsePowerupStartClient()
+{
+	//아직까지는 로컬 컨디션에 아무것도 체크를 하지 않는다. 이는 이후 화면멈춤상황에서 스킬을 사용하고있거나하는 상황들에서사용할것이다.
+	//check local conditions
+
+	//call powerup use on server
+	UsePowerupStartServer();
+}
+
+void ABaseCharacter::UsePowerupStartServer_Implementation()
+{
+	//firing이 아니거나 파워업이 없는경우
+	if (!bIsFiring && SelectedPowerupIndex >= 0)
+	{
+		bIsFiring = true;
+	}
+}
+bool ABaseCharacter::UsePowerupStartServer_Validate()
+{
+	return true;
+}
+void ABaseCharacter::PowerupUsed_Implementation()
+{
+	//firing인 경우
+	if (bIsFiring)
+	{
+		//이때의 애니매이션에서 손의 위치를 가져온다
+		FVector HandLocation = GetMesh()->GetBoneLocation(TEXT("LeftHandMiddle1"));
+
+		//powerup이 유효한지 다시 한번 확인한다.
+		if (SelectedPowerupIndex >= 0)
+		{
+			APlatformerPlayerState* PS = Cast<APlatformerPlayerState>(GetPlayerState());
+
+			if (PS)
+			{
+				PS->SelectedPowerup->UsePowerup(this, HandLocation, TraceDirection->GetForwardVector());
+			}
+		}
+
+		bIsFiring = false;
+	}
+}
+bool ABaseCharacter::PowerupUsed_Validate()
+{
+	return true;
+}
+void ABaseCharacter::ReceiveDamage(int amount)
+{
+	APlatformerPlayerState* PS = Cast<APlatformerPlayerState>(GetPlayerState());
+
+	if (PS)
+	{
+		PS->ReceiveDamage(amount);
+	}
+}
+
+void ABaseCharacter::CollectPowerup(APowerup* powerup)
+{
+	//파워업을 인벤토리에 추가
+	PowerUps.Add(powerup);
+
+	//파워업을 캐릭터에 상속; (후에 자식을위해서)
+	powerup->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
+	//파워업을 가지지 않았다면, 이 파워업을 선택
+	if (SelectedPowerupIndex < 0)
+			NextPowerup();
+}
+void ABaseCharacter::NextPowerup()
+{
+	//배열이 비어있지않다면.
+	if (PowerUps.Num() != 0)
+	{
+		SelectedPowerupIndex++;
+
+		//배열인덱스가 파워업크기보다 크다면 배열에 처음부분으로 초기화.
+		if (SelectedPowerupIndex >= PowerUps.Num())
+		{
+			SelectedPowerupIndex = 0;
+		}
+
+		//player state 에게 새 파워업이 선택되었다고 알림.
+		APlatformerPlayerState* PS = Cast<APlatformerPlayerState>(GetPlayerState());
+
+		if (PS)
+		{
+			PS->SelectedPowerup = PowerUps[SelectedPowerupIndex];
+		}
+	}
 }
 
 
@@ -149,6 +264,7 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	//입력 바인드
 	InputComponent->BindAction("Jump", EInputEvent::IE_Pressed, this, &ACharacter::Jump);
+	InputComponent->BindAction("UsePowerUp", EInputEvent::IE_Pressed, this, &ABaseCharacter::UsePowerupStartClient);
 
 	InputComponent->BindAxis("ChangeCameraHeight", this, &ABaseCharacter::ChangeCameraHeight);
 	InputComponent->BindAxis("RotateCamera", this, &ABaseCharacter::RotateCamera);

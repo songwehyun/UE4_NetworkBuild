@@ -3,7 +3,7 @@
 
 #include "Pickup.h"
 #include "UnrealNetwork.h"
-#include "Pickup.h"
+#include "BaseCharacter.h"
 #include "Engine/Classes/Components/SphereComponent.h"
 #include "Engine/Classes/Components/StaticMeshComponent.h"
 // Sets default values
