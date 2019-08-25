@@ -56,7 +56,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(Replicated, EditDefaultsOnly ,Category = "Pickup")
+	UPROPERTY(Replicated, VisibleAnywhere ,Category = "Pickup")
 		bool bIsPickedUp;
 public:	
 	// Called every frame

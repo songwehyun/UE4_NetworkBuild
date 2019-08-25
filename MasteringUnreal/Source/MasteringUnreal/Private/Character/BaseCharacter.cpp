@@ -8,6 +8,7 @@
 #include "Engine/Classes/Camera/CameraComponent.h"
 #include "Engine/Classes/Components/ArrowComponent.h"
 #include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
+#include "Engine/Classes/Components/SkeletalMeshComponent.h"
 #include "Engine/Classes/Components/InputComponent.h"
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -65,7 +66,7 @@ ABaseCharacter::ABaseCharacter()
 
 
 /*
-캐릭터가 선택된 파워업기능을 사용할때 애니매이션도 같이 실행되어야하는데,
+캐릭터가 선택된 파워업기능을 사용할때 애니매이션도 같이 실행되어야할것이다,
 파워업을 가지고있다면 버튼을 누르는등 트리거가 켜져서 파워업기능을 사용하게 되었을때 애니메이션 이벤트 트리거가
 Firing애니매이션을 시작하게 될것이고, 이를위해 파워업 서버함수가 사용될것이다.
 이는 서버에서 미리 결정해야 할것이며 이를 위해서 bIsFiring 변수와 서버함수들을 사용하고 있다.
