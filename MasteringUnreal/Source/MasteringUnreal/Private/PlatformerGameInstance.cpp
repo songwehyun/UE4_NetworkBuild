@@ -14,6 +14,14 @@ UPlatformerGameInstance::UPlatformerGameInstance(const FObjectInitializer& Objec
 	//현재의 위젯은 없으므로 널 초기화.
 	CurrentWidget = nullptr;
 
+	/*세션 매니지먼트를 위해 함수 바인딩*/
+	
+	OnCreateSessionCompleteDelegate = FOnCreateSessionCompleteDelegate::CreateUObject(this, &UPlatformerGameInstance::OnCreateSessionComplete);
+
+	OnStartSessionCompleteDelegate = FOnStartSessionCompleteDelegate::CreateUObject(this, &UPlatformerGameInstance::OnStartOnlineGameComplete);
+
+
+
 }
 
 void UPlatformerGameInstance::ChangeState(EGameState newState)
@@ -59,6 +67,134 @@ void UPlatformerGameInstance::SetInputMode(EInputMode newInputMode, bool bShowMo
 	//변수에 저장해놓음.
 	CurrentInputMode = newInputMode;
 	bIsShowingMouseCursor = bShowMouseCursor;
+}
+
+void UPlatformerGameInstance::HostGame(bool bIsLAN, int32 MaxNumPlayers, TArray<FBlueprintSessionSetting> sessionSettings)
+{
+	//Get the Online Subsystem.
+	IOnlineSubsystem* OnlineSub = IOnlineSubsystem::Get();
+
+	if (OnlineSub)
+	{
+		//유니크플레이어id를 가진다. 0은 클라이언트마다 멀티플레이어가 허용되지 않을때 사용한다. 
+		TSharedPtr<const FUniqueNetId> pid = OnlineSub->GetIdentityInterface()->GetUniquePlayerId(0);
+
+		//SpecaiSetting map 제작
+		TMap<FString, FOnlineSessionSetting> SpecialSettings = TMap<FString, FOnlineSessionSetting>();
+
+		//제공된 세팅을 루프로 돌아 special settings map을 추가
+		for (auto &setting : sessionSettings)
+		{
+			FOnlineSessionSetting newSetting;
+
+			newSetting.Data = setting.value;
+
+			newSetting.AdvertisementType = EOnlineDataAdvertisementType::ViaOnlineService;
+
+			SpecialSettings.Add(setting.key, newSetting);
+		}
+
+		//게임을 호스트를 시도할때 로딩스크린의 스테이트 변경.
+		ChangeState(EGameState::ELoadingScreen);
+
+		//세션 호스트
+		HostSession(pid, GameSessionName, bIsLAN, MaxNumPlayers, SpecialSettings);
+	}
+}
+
+bool UPlatformerGameInstance::HostSession(TSharedPtr<const FUniqueNetId> UserId, FName SessionName, bool bIsLAN, int32 MaxNumPlayers, TMap<FString, FOnlineSessionSetting> SettingsMap)
+{
+	IOnlineSubsystem* OnlineSub = IOnlineSubsystem::Get();
+
+	if (OnlineSub)
+	{
+		//Get SessionInterface, createSession을 위에 호출 할수 있다.
+		IOnlineSessionPtr Sessions = OnlineSub->GetSessionInterface();
+
+		if (Sessions.IsValid() && UserId.IsValid())
+		{
+			//SessionSettings을 공유포인터로 만듬.
+			SessionSettings = MakeShareable(new FOnlineSessionSettings());
+
+			SessionSettings->bIsLANMatch = bIsLAN;
+			SessionSettings->bUsesPresence = true;
+			SessionSettings->NumPublicConnections = MaxNumPlayers;
+			SessionSettings->NumPrivateConnections = 0;
+			SessionSettings->bAllowInvites = true;
+			SessionSettings->bAllowJoinInProgress = true;
+			SessionSettings->bShouldAdvertise = true;
+			SessionSettings->bAllowJoinViaPresence = true;
+			SessionSettings->bAllowJoinViaPresenceFriendsOnly = false;
+
+			//specialsettings을 사용할 맵에 세팅한다.
+			//계속 Map_SandBox를 사용할거지만
+			//게임중이거나,호스팅 스크린에서 변경하게 해줄 수있다
+			SessionSettings->Set(SETTING_MAPNAME, FString("Map_SandBox"), EOnlineDataAdvertisementType::ViaOnlineService);
+
+			//SpecialSettings을 추가.
+			for (auto &setting : SettingsMap)
+			{
+				SessionSettings->Settings.Add(FName(*setting.Key), setting.Value);
+			}
+
+			//델리게이트와 세션인터페이스등록과 함께 핸들을 가져옴.
+			OnCreateSessionCompleteDelegateHandle = Sessions->AddOnCreateSessionCompleteDelegate_Handle(OnCreateSessionCompleteDelegate);
+
+			//CreateSession에 값을 리턴
+			return Sessions->CreateSession(*UserId, SessionName, *SessionSettings);
+		}
+	}
+	//서브시스템을 못찾았다면 return false.
+	return false;
+}
+
+void UPlatformerGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSuccessful)
+{
+	IOnlineSubsystem* OnlineSub = IOnlineSubsystem::Get();
+
+	if (OnlineSub)
+	{
+		//세션 인터페이스 Get.
+		IOnlineSessionPtr Sessions = OnlineSub->GetSessionInterface();
+
+		if (Sessions.IsValid())
+		{
+			//호출을 여기까지 마쳤으니 DelegateHandle을 clear해준다.
+			Sessions->ClearOnCreateSessionCompleteDelegate_Handle(OnCreateSessionCompleteDelegateHandle);
+			//Successful이였다면 게임 Start.
+			if (bWasSuccessful)
+			{
+				//StartSessionDelegate 세팅.
+				OnStartSessionCompleteDelegateHandle = Sessions->AddOnStartSessionCompleteDelegate_Handle(OnStartSessionCompleteDelegate);
+				//StartSession 실행.
+				Sessions->StartSession(SessionName);
+			}
+		}
+	}
+}
+
+void UPlatformerGameInstance::OnStartOnlineGameComplete(FName SessionName, bool bWasSuccessful)
+{
+	IOnlineSubsystem* OnlineSub = IOnlineSubsystem::Get();
+
+	if (OnlineSub)
+	{
+		IOnlineSessionPtr Sessions = OnlineSub->GetSessionInterface();
+
+		if (Sessions.IsValid())
+		{
+			//델리게이트 클리어
+			Sessions->ClearOnStartSessionCompleteDelegate_Handle(OnStartSessionCompleteDelegateHandle);
+		}
+	}
+
+	//시작까지 성공적이였다면 맵을 리슨서버로 연다
+	if (bWasSuccessful)
+	{
+		UGameplayStatics::OpenLevel(GetWorld(), "Map_SandBox", true, "listen");
+
+		ChangeState(EGameState::ETravelling);
+	}
 }
 
 void UPlatformerGameInstance::EnterState(EGameState newState)
