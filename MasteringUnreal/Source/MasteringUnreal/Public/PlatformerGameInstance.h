@@ -57,7 +57,7 @@ struct FBlueprintSearchResult
 	UPROPERTY(BlueprintReadOnly, Category = "Session Management")
 		int MaxPlayers;
 
-	//SearchResult가 비어있는 경우를 위해서 생성자로 초기화
+	//SearchResult가 비어있는 경우의 생성자.
 	FBlueprintSearchResult()
 	{
 		ServerName = FString("No Server Info");
@@ -67,10 +67,49 @@ struct FBlueprintSearchResult
 		MaxPlayers = 0;
 	}
 
-	/*FBlueprintSearchResult(FOnlineSessionSearchResult theResult)
+	/*SearchResult가 있는경우의 생성자*/
+	FBlueprintSearchResult(FOnlineSessionSearchResult theResult)
 	{
+		//keep result
+		result = theResult;
 
-	}*/
+		//serchresult의 SpecialSetting값을 가져옴.
+		ServerName = GetSpecialSettingString(FString("ServerName"));
+		MapName = GetSpecialSettingString(FString("MAPNAME"));
+		FString InProgressString = GetSpecialSettingString(FString("InProgress"));
+
+		if (InProgressString == FString("true"))
+		{
+			bIsInprogress = true;
+		}
+		else
+		{
+			bIsInprogress = false;
+		}
+		
+		
+		MaxPlayers = result.Session.SessionSettings.NumPublicConnections;
+		CurrentPlayers = MaxPlayers - result.Session.NumOpenPublicConnections;
+		PingInMs = result.PingInMs;
+	}
+
+	//result로 부터의 specialsettings데이터를 가져올 함수.
+	FString GetSpecialSettingString(FString key)
+	{
+		FOnlineSessionSettings settings = result.Session.SessionSettings;
+
+		//키가 있는지 확인
+		if (settings.Settings.Contains(FName(*key)))
+		{
+			FString value;
+
+			settings.Settings[FName(*key)].Data.GetValue(value);
+			return value;
+		}
+		
+		//세팅을 가지고 있지 않다면.
+		return FString("No DATA AT THAT KEY");
+	}
 };
 /* 
 ENUM TO TRACK INPUT STATES
@@ -105,6 +144,8 @@ public:
 	/*원시 C++ 방식인 UPlatformerGameInstance();로 생성자를 만들 수 없다.*/
 	UPlatformerGameInstance(const FObjectInitializer& ObjectInitializer);
 
+	//Init Function
+	virtual void Init() override;
 	/*위젯 레퍼런스, 이는 스크린에 디스플레이 될것이다.*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Platformer Game Instance")
 		TSubclassOf<class UUserWidget> cMainMenu;
@@ -170,6 +211,87 @@ public:
 	//델리게이트 등록후 들고있을 델리게이트 핸들
 	FDelegateHandle OnStartSessionCompleteDelegateHandle;
 
+	/*세션 찾기*/
+
+	//search results를 가지고 있을 array
+	UPROPERTY(BlueprintReadOnly, Category = "Session Management")
+		TArray<FBlueprintSearchResult> searchResults;
+
+	//search status를 추적할 booleans
+	UPROPERTY(BlueprintReadOnly, Category = "Session Management")
+		bool bHasFinishedSearchingForGames;
+	UPROPERTY(BlueprintReadOnly, Category = "Session Management")
+		bool bSearchingForGames;
+
+	//c++ Native searchresults 에 공유포인터
+	TSharedPtr<class FOnlineSessionSearch> SessionSearch;
+
+	//blueprint function for finding games
+	UFUNCTION(BlueprintCallable, Category = "Session Management")
+		void FindGames(bool bIsLAN);
+
+	//세션을 찾기위한 c++ 함수
+	void FindSessions(TSharedPtr<const FUniqueNetId> UserId, FName SessionName, bool bIsLAN);
+
+	//FindSessions이 끝나면 호출할 델리게이트 함수.
+	void OnFindSessionComplete(bool bWasSuccessful);
+	
+	FOnFindSessionsCompleteDelegate OnFindSessionsCompleteDelegate;
+
+	FDelegateHandle OnFindSessionsCompleteDelegateHandle;
+
+	/*JOIN SESSIONS*/
+	//세션에 들어가기위한 Blueprint 함수
+	UFUNCTION(BlueprintCallable, Category = "Session Management")
+		void JoinGame(FBlueprintSearchResult result);
+
+	//세션에 들어가기위한 C++함수.
+	bool JoinSession(TSharedPtr<const FUniqueNetId> UserId, FName SessionName, const FOnlineSessionSearchResult& SearchResult);
+
+	//세션에 들어가졌을때 호출할 델리게이트함수.
+	void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
+
+	//함수를 바인딩 할 델리게이트.
+	FOnJoinSessionCompleteDelegate OnJoinSessionCompleteDelegate;
+
+	//OnJoinSessionCompleteDelgate를 제어할 델리게이트 핸들.
+	FDelegateHandle OnJoinSessionCompleteDelegateHandle;
+
+	/* UPDAITNG SESSION */
+	//활성화된 세션의 special setting의 현재 값을 가져오는 함수.
+	UFUNCTION(BlueprintCallable, Category = "Session Management")
+		FString GetSessionSpecialSettingString(FString key);
+
+	//활성화된 세션의 존재하는 special setting을 업데이트하거나 새로 만드는 함수.
+	//host only.
+	UFUNCTION(BlueprintCallable, Category = "Session Management")
+		void SetOrUpdateSessionSpecialSettingString(FBlueprintSessionSetting newSetting);
+
+	//세션업데이트가 끝났을때 호출되는 델리게이트 함수.
+	void OnUpdateSessionComplete(FName SessionName, bool bWasSuccessful);
+
+	//업데이트가 끝나고 나서 호출할 델리게이트
+	FOnUpdateSessionCompleteDelegate OnUpdateSessionCompleteDelegate;
+
+	//OnupdateSessionCompleteDelegate를 제어할 핸들.
+	FDelegateHandle OnUpdateSessionCompleteDelegateHandle;
+
+	/* Destroy Session / Leave Game */
+	
+	UFUNCTION(BlueprintCallable, Category = "Session Management")
+		void LeaveGame();
+
+	//세션을 떠나고 나서 호출할 델리게이트 함수.
+	void OnDestroySessionComplete(FName SessionName, bool bWasSuccessful);
+
+	//세션을 Destroy한후 호출할 델리게이트
+	FOnDestroySessionCompleteDelegate OnDestroySessionCompleteDelegate;
+
+	//OnDestroySessionCompleteDelegate를 제어할 핸들.
+	FDelegateHandle OnDestroySessionCompleteDelegateHandle;
+
+	/* Handle Network Error*/
+	void HandleNetworkError(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType, const FString& ErrorString);
 private:
 	//현재 보이는 위젯
 	UUserWidget* CurrentWidget;
