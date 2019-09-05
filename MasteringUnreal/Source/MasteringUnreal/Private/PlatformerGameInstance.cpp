@@ -612,32 +612,38 @@ void UPlatformerGameInstance::LeaveState()
 	{
 	case EGameState::ELoadingScreen:
 	{
-		CurrentWidget->RemoveFromViewport();
-		CurrentWidget = nullptr;
-		break;
+		if (CurrentWidget)
+		{
+			CurrentWidget->RemoveFromViewport();
+			CurrentWidget = nullptr;
+		}
 	}
 	case EGameState::EMainMenu:
 	{
-		CurrentWidget->RemoveFromViewport();
-		CurrentWidget = nullptr;
-		break;
+		if (CurrentWidget)
+		{
+			CurrentWidget->RemoveFromViewport();
+			CurrentWidget = nullptr;
+		}
 	}
 	case EGameState::EMultiplayerJoin:
 	{
-		CurrentWidget->RemoveFromViewport();
-		CurrentWidget = nullptr;
-		break;
+		if (CurrentWidget)
+		{
+			CurrentWidget->RemoveFromViewport();
+			CurrentWidget = nullptr;
+		}
 	}
 	case EGameState::EMultiplayerHome:
 	{
-		CurrentWidget->RemoveFromViewport();
-		CurrentWidget = nullptr;
-		break;
+		if (CurrentWidget)
+		{
+			CurrentWidget->RemoveFromViewport();
+			CurrentWidget = nullptr;
+		}
 	}
 	case EGameState::EMultiplayerInGame:
 	{
-		CurrentWidget->RemoveFromViewport();
-		CurrentWidget = nullptr;
 		break;
 	}
 	case EGameState::EMultiplayerHost:
@@ -651,14 +657,10 @@ void UPlatformerGameInstance::LeaveState()
 	}
 	case EGameState::EStartup:
 	{
-		CurrentWidget->RemoveFromViewport();
-		CurrentWidget = nullptr;
 		break;
 	}
 	case EGameState::ETravelling:
 	{
-		CurrentWidget->RemoveFromViewport();
-		CurrentWidget = nullptr;
 		break;
 	}
 	default:
