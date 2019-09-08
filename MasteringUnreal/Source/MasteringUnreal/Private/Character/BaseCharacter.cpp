@@ -10,6 +10,7 @@
 #include "Engine/Classes/GameFramework/CharacterMovementComponent.h"
 #include "Engine/Classes/Components/SkeletalMeshComponent.h"
 #include "Engine/Classes/Components/InputComponent.h"
+#include "PlatformerPlayerController.h"
 // Sets default values
 ABaseCharacter::ABaseCharacter()
 {
@@ -82,6 +83,9 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 
 void ABaseCharacter::UsePowerupStartClient()
 {
+	APlatformerPlayerController* PC = Cast<APlatformerPlayerController>(GetWorld()->GetFirstPlayerController());
+
+	if (PC && PC->bPauseMenuDisplayed) return;
 	//아직까지는 로컬 컨디션에 아무것도 체크를 하지 않는다. 이는 이후 화면멈춤상황에서 스킬을 사용하고있거나하는 상황들에서사용할것이다.
 	//check local conditions
 
@@ -91,7 +95,7 @@ void ABaseCharacter::UsePowerupStartClient()
 
 void ABaseCharacter::UsePowerupStartServer_Implementation()
 {
-	//firing이 아니거나 파워업이 없는경우
+	//firing이 아니지만 파워업이 있는경우
 	if (!bIsFiring && SelectedPowerupIndex >= 0)
 	{
 		bIsFiring = true;
@@ -175,6 +179,10 @@ void ABaseCharacter::NextPowerup()
 
 void ABaseCharacter::MoveForward(float amount)
 {
+	APlatformerPlayerController* PC = Cast<APlatformerPlayerController>(GetWorld()->GetFirstPlayerController());
+
+	if (PC && PC->bPauseMenuDisplayed) return;
+
 	//카메라가 바라보는 방향으로 무브먼트 추가.
 	if (Controller && amount)
 	{
@@ -184,6 +192,9 @@ void ABaseCharacter::MoveForward(float amount)
 
 void ABaseCharacter::MoveRight(float amount)
 {
+	APlatformerPlayerController* PC = Cast<APlatformerPlayerController>(GetWorld()->GetFirstPlayerController());
+
+	if (PC && PC->bPauseMenuDisplayed) return;
 	//카메라 우측방향으로 입력 추가.
 	if (Controller && amount)
 	{
@@ -193,6 +204,9 @@ void ABaseCharacter::MoveRight(float amount)
 
 void ABaseCharacter::RotateCamera(float amount)
 {
+	APlatformerPlayerController* PC = Cast<APlatformerPlayerController>(GetWorld()->GetFirstPlayerController());
+
+	if (PC && PC->bPauseMenuDisplayed) return;
 	//스프링암 z 축 회전
 	if (Controller && amount)
 	{
@@ -204,6 +218,9 @@ void ABaseCharacter::RotateCamera(float amount)
 
 void ABaseCharacter::ChangeCameraHeight(float amount)
 {
+	APlatformerPlayerController* PC = Cast<APlatformerPlayerController>(GetWorld()->GetFirstPlayerController());
+
+	if (PC && PC->bPauseMenuDisplayed) return;
 	//스프링암의 y 축 회전. Clamp -45 ~ -5. ( 주어진 값이 하한보다 작으면 하한을,상한보다 크면 상한을 돌려주고 그 외는 주어진 값을 돌려준다.)
 
 	if (Controller && amount)

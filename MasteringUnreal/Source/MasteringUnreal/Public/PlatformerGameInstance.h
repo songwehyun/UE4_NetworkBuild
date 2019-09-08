@@ -246,8 +246,7 @@ public:
 		void JoinGame(FBlueprintSearchResult result);
 
 	//세션에 들어가기위한 C++함수.
-	bool JoinSession(TSharedPtr<const FUniqueNetId> UserId, FName SessionName, const FOnlineSessionSearchResult& SearchResult);
-
+	bool JoinSessions(TSharedPtr<const FUniqueNetId> UserId, FName SessionName, const FOnlineSessionSearchResult& SearchResult);
 	//세션에 들어가졌을때 호출할 델리게이트함수.
 	void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
 

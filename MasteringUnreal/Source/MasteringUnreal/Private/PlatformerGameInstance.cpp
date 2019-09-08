@@ -321,11 +321,11 @@ void UPlatformerGameInstance::JoinGame(FBlueprintSearchResult result)
 		TSharedPtr<const FUniqueNetId> pid = OnlineSub->GetIdentityInterface()->GetUniquePlayerId(0);
 
 		//FBlueprintSearchResult구조체에 있는 result를 통과하면서 JoinSession을 호출한다.
-		JoinSession(pid, GameSessionName, result.result);
+		JoinSessions(pid, GameSessionName, result.result);
 	}
 }
 
-bool UPlatformerGameInstance::JoinSession(TSharedPtr<const FUniqueNetId> UserId, FName SessionName, const FOnlineSessionSearchResult& SearchResult)
+bool UPlatformerGameInstance::JoinSessions(TSharedPtr<const FUniqueNetId> UserId, FName SessionName, const FOnlineSessionSearchResult& SearchResult)
 {
 	//to hold result.
 	bool bSuccessful = false;

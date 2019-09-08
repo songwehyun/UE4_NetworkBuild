@@ -5,10 +5,7 @@
 #include "BaseCharacter.h"
 #include "Engine/Classes/Components/SphereComponent.h"
 #include "Engine/Classes/Components/StaticMeshComponent.h"
-APowerup::APowerup()
-{
 
-}
 void APowerup::CollectPickup_Implementation(ABaseCharacter* Character)
 {
 	if (Role != ROLE_Authority) return;

@@ -18,4 +18,5 @@ public:
 	APowerup_Fireball();
 
 	virtual void UsePowerup(ABaseCharacter* Character, FVector LaunchLocation, FVector LaunchDirection) override;
+
 };

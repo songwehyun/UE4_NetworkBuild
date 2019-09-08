@@ -14,7 +14,7 @@ class MASTERINGUNREAL_API APowerup : public APickup
 {
 	GENERATED_BODY()
 public:
-	APowerup();
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Power Up")
 		UTexture2D* icon;
 
@@ -22,4 +22,6 @@ public:
 
 	//powerup을 사용하기 위한 함수
 	virtual void UsePowerup(ABaseCharacter* Character, FVector LaunchLocation, FVector LaunchDirection);
+
+	
 };

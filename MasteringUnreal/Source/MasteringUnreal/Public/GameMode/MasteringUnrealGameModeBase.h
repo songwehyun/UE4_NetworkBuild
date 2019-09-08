@@ -27,5 +27,8 @@ UCLASS()
 class MASTERINGUNREAL_API AMasteringUnrealGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
+public:
+	
+	virtual void Logout(AController* exiting) override;
 	
 };
