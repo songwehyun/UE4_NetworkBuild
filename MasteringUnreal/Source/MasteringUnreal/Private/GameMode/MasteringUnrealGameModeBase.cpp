@@ -4,6 +4,7 @@
 #include "MasteringUnrealGameModeBase.h"
 #include "PlatformerGameState.h"
 #include "PlatformerGameInstance.h"
+#include "PlatformerPlayerState.h"
 
 AMasteringUnrealGameModeBase::AMasteringUnrealGameModeBase()
 {
@@ -32,10 +33,10 @@ void AMasteringUnrealGameModeBase::Tick(float DeltaTime)
 	if (Role == ROLE_Authority) 
 	{
 		//get current game state
-		APlatformerGameState *PlatGameState = Cast<APlatformerGameState>(GameState);
+		APlatformerGameState* PlatGameState = Cast<APlatformerGameState>(GameState);
 
-		//get game instance
-		UPlatformerGameInstance *GameInstance = Cast<UPlatformerGameInstance>(GetGameInstance());
+ 		//get game instance
+		UPlatformerGameInstance* GameInstance = Cast<UPlatformerGameInstance>(GetGameInstance());
 
 		if (GameInstance && PlatGameState) 
 		{
@@ -54,4 +55,9 @@ void AMasteringUnrealGameModeBase::Tick(float DeltaTime)
 			}
 		}
 	}
+}
+
+UClass* AMasteringUnrealGameModeBase::GetDefaultPawnClassForController_Implementation(AController* InController)
+{
+
 }

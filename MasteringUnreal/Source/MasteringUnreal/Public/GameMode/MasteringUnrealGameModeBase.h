@@ -31,4 +31,7 @@ public:
 	AMasteringUnrealGameModeBase();
 	virtual void Logout(AController* exiting) override;
 	virtual void Tick(float DeltaTime) override;
+
+	//for spawning appropriate character
+	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
 };

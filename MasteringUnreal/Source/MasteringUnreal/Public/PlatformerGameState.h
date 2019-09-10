@@ -30,7 +30,7 @@ struct FCharacterSpecification
 		TSubclassOf<class ABaseCharacter> CharacterClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
-		UTexture2D *CharacterIcon;
+		UTexture2D* CharacterIcon;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
 		FString CharacterName;
@@ -72,7 +72,7 @@ public:
 
 private:
 	//the currently displayed widget
-	UUserWidget *CurrentWidget;
+	UUserWidget* CurrentWidget;
 	//the current state, replicated
 	UPROPERTY(Replicated, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 		EMatchState CurrentMatchState;

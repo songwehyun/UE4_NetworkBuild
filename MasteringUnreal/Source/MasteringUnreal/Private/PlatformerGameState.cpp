@@ -44,16 +44,20 @@ void APlatformerGameState::EnterState(EMatchState newState)
 	//Change state on player
 	APlatformerPlayerState* CurrentPlayerState = Cast<APlatformerPlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
 
-	if (CurrentPlayerState) {
+	if (CurrentPlayerState)
+	{
 		CurrentPlayerState->CurrentLocalMatchState = CurrentMatchState;
 	}
 
 	//switch on new state
-	switch (CurrentMatchState) {
-	case EMatchState::ENotConnected: {
+	switch (CurrentMatchState) 
+	{
+	case EMatchState::ENotConnected: 
+	{
 		break;
 	}
-	case EMatchState::EWaitingForPlayers: {
+	case EMatchState::EWaitingForPlayers: 
+	{
 		//Show waiting for players UI
 		CurrentWidget = CreateWidget<UUserWidget>(GetWorld()->GetFirstPlayerController(), cWaitingForPlayers);
 		CurrentWidget->AddToViewport();
@@ -61,7 +65,8 @@ void APlatformerGameState::EnterState(EMatchState newState)
 		//change input mode
 		UPlatformerGameInstance *GameInstance = Cast<UPlatformerGameInstance>(GetWorld()->GetGameInstance());
 
-		if (GameInstance) {
+		if (GameInstance) 
+		{
 			GameInstance->SetInputMode(EInputMode::EUIOnly, true);
 		}
 		break;
@@ -90,8 +95,6 @@ void APlatformerGameState::EnterState(EMatchState newState)
 	}
 	case EMatchState::ERestartingGame: 
 	{
-
-		
 		break;
 	}
 	}
@@ -100,23 +103,30 @@ void APlatformerGameState::EnterState(EMatchState newState)
 void APlatformerGameState::LeaveState()
 {
 	//switch on new state
-	switch (CurrentMatchState) {
-	case EMatchState::ENotConnected: {
+	switch (CurrentMatchState) 
+	{
+	case EMatchState::ENotConnected: 
+	{
 		//		break;
 	}
-	case EMatchState::EWaitingForPlayers: {
+	case EMatchState::EWaitingForPlayers: 
+	{
 		//		break;
 	}
-	case EMatchState::EStartingGame: {
+	case EMatchState::EStartingGame: 
+	{
 		//		break;
 	}
-	case EMatchState::EGameInProgress: {
+	case EMatchState::EGameInProgress: 
+	{
 		//		break;
 	}
-	case EMatchState::EGameComplete: {
+	case EMatchState::EGameComplete: 
+	{
 		//		break;
 	}
-	case EMatchState::ERestartingGame: {
+	case EMatchState::ERestartingGame: 
+	{
 		//hide any widget
 		if (CurrentWidget) {
 			CurrentWidget->RemoveFromViewport();
