@@ -28,7 +28,7 @@ class MASTERINGUNREAL_API AMasteringUnrealGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 public:
-	
+	AMasteringUnrealGameModeBase();
 	virtual void Logout(AController* exiting) override;
-	
+	virtual void Tick(float DeltaTime) override;
 };
