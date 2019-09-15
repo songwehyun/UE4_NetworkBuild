@@ -47,4 +47,7 @@ public:
 
 	void ShowPlayerList();
 	void HidePlayerList();
+
+	UFUNCTION(BlueprintCallable, Category = "Platformer Player Controller")
+		void HideAllMenus();
 };

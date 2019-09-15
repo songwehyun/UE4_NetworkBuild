@@ -124,3 +124,13 @@ void APlatformerPlayerController::HidePlayerList()
 		}
 	}
 }
+
+void APlatformerPlayerController::HideAllMenus()
+{
+	HidePlayerList();
+
+	if (bPauseMenuDisplayed)
+	{
+		TogglePauseMenu();
+	}
+}

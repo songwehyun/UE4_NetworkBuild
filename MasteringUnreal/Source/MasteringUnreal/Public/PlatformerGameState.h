@@ -57,6 +57,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
 		TSubclassOf<class UUserWidget> cWaitingForPlayers;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
+		TSubclassOf<class UUserWidget> cGameInProgress;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
+		TSubclassOf<class UUserWidget> cChangingLevel;
+
 	//Character list we'll specify in the editor:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
 		TArray<FCharacterSpecification> Characters;
@@ -70,12 +76,21 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+
+	//Update Match Time
+
+	UFUNCTION(Server, Reliable, WithValidation, Category = "Match State")
+		void UpdateMatchTime(float NewTime);
 private:
 	//the currently displayed widget
 	UUserWidget* CurrentWidget;
 	//the current state, replicated
 	UPROPERTY(Replicated, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
 		EMatchState CurrentMatchState;
+
+	UPROPERTY(Replicated, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+		float TotalMatchTime;
+
 	//for changing state
 	void EnterState(EMatchState newState);
 	void LeaveState();

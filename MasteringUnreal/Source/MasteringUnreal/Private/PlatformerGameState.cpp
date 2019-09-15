@@ -21,7 +21,7 @@ void APlatformerGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(APlatformerGameState, CurrentMatchState);
-
+	DOREPLIFETIME(APlatformerGameState, TotalMatchTime);
 }
 
 void APlatformerGameState::ChangeState_Implementation(EMatchState newState)
@@ -35,6 +35,16 @@ void APlatformerGameState::ChangeState_Implementation(EMatchState newState)
 EMatchState APlatformerGameState::GetMatchState()
 {
 	return CurrentMatchState;
+}
+
+void APlatformerGameState::UpdateMatchTime_Implementation(float NewTime)
+{
+	TotalMatchTime = NewTime;
+}
+
+bool APlatformerGameState::UpdateMatchTime_Validate(float NewTIme)
+{
+	return true;
 }
 
 void APlatformerGameState::EnterState(EMatchState newState)
@@ -69,12 +79,30 @@ void APlatformerGameState::EnterState(EMatchState newState)
 		{
 			GameInstance->SetInputMode(EInputMode::EUIOnly, true);
 		}
+
+		if (Role == ROLE_Authority)
+		{
+			//set in progress session setting to false
+			FBlueprintSessionSetting NewSetting;
+			NewSetting.key = FString("InProgress");
+			NewSetting.value = FString("false");
+
+			GameInstance->SetOrUpdateSessionSpecialSettingString(NewSetting);
+		}
 		break;
 	}
 	case EMatchState::EStartingGame: 
 	{
 		if (Role == ROLE_Authority)
 		{
+			//respawn all conneted players if we're the server
+			for (auto &player : PlayerArray)
+			{
+				//destroy the current pawn
+				player->GetNetOwningPlayer()->PlayerController->GetPawn()->Destroy();
+				//spawn the new pawn
+				player->GetNetOwningPlayer()->PlayerController->ServerRestartPlayer();
+			}
 			ChangeState(EMatchState::EGameInProgress);
 		}
 		break;
@@ -85,7 +113,20 @@ void APlatformerGameState::EnterState(EMatchState newState)
 
 		if (GameInstance)
 		{
+			CurrentWidget = CreateWidget<UUserWidget>(GetWorld()->GetFirstPlayerController(), cGameInProgress);
+			CurrentWidget->AddToViewport();
+
 			GameInstance->SetInputMode(EInputMode::EGameOnly, false);
+		}
+
+		if (Role == ROLE_Authority)
+		{
+			//set in progress session setting to true
+			FBlueprintSessionSetting NewSetting;
+			NewSetting.key = FString("InProgress");
+			NewSetting.value = FString("true");
+
+			GameInstance->SetOrUpdateSessionSpecialSettingString(NewSetting);
 		}
 		break;
 	}
@@ -95,6 +136,32 @@ void APlatformerGameState::EnterState(EMatchState newState)
 	}
 	case EMatchState::ERestartingGame: 
 	{
+		UPlatformerGameInstance* GameInstance = Cast<UPlatformerGameInstance>(GetWorld()->GetGameInstance());
+
+		if (GameInstance)
+		{
+			CurrentWidget = CreateWidget<UUserWidget>(GetWorld()->GetFirstPlayerController(), cChangingLevel);
+			CurrentWidget->AddToViewport();
+
+			GameInstance->SetInputMode(EInputMode::EUIOnly, true);
+		}
+
+		if (Role == ROLE_Authority)
+		{
+			//respawn all conneted players if we're the server
+			for (auto &player : PlayerArray)
+			{
+				//destroy the current pawn
+				player->GetNetOwningPlayer()->PlayerController->GetPawn()->Destroy();
+				//spawn the new pawn
+				player->GetNetOwningPlayer()->PlayerController->ServerRestartPlayer();
+			}
+
+			//Travel to a new instance of our map by getting the session setting.
+			//"MAPNAME" and passing it to ServerTravel
+			FString mapname = GameInstance->GetSessionSpecialSettingString("MAPNAME");
+			GetWorld()->ServerTravel(mapname);
+		}
 		break;
 	}
 	}

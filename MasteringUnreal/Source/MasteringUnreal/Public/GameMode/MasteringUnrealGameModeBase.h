@@ -34,4 +34,7 @@ public:
 
 	//for spawning appropriate character
 	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
+
+private:
+	float TimeSinceStart;
 };
