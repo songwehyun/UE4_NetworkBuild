@@ -68,6 +68,26 @@ bool APlatformerPlayerState::SelectCharacter_Validate(int index)
 }
 
 
+int APlatformerPlayerState::GetCurrentHealth()
+{
+	return CurrentHealth;
+}
+void APlatformerPlayerState::PlayerRespawnedAfterDeath_Implementation()
+{
+	if (Role == ROLE_Authority)
+	{
+		CurrentHealth = MaxHealth;
+
+		NumberOfCoinCollected = NumberOfCoinCollected / 2;
+		SelectedPowerup = nullptr;
+		NumberOfDeaths++;
+	}
+}
+
+bool APlatformerPlayerState::PlayerRespawnedAfterDeath_Validate()
+{
+	return true;
+}
 void  APlatformerPlayerState::ReceiveDamage(int amount)
 {
 	CurrentHealth -= amount;

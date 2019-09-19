@@ -61,6 +61,11 @@ public:
 
 	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable, Category = "Platformer Player State")
 		void SelectCharacter(int index);
+
+	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable, Category = "Platfomer Player State")
+		void PlayerRespawnedAfterDeath();
+
+	int GetCurrentHealth();
 protected:
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Platformer Player State")
 		int NumberOfCoinCollected;

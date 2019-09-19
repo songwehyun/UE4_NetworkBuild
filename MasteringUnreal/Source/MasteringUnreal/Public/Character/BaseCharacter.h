@@ -82,6 +82,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Server, WithValidation, Reliable, Category = "Base Character")
 		void PowerupUsed();
+
+	virtual void EndPlay(EEndPlayReason::Type EndPlayReason) override;
 private:
 	int SelectedPowerupIndex;
 };

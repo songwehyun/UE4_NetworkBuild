@@ -80,6 +80,15 @@ void ABaseCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(ABaseCharacter, bIsFiring);
 }
 
+void ABaseCharacter::EndPlay(EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	for (auto &powerup : PowerUps)
+	{
+		powerup->Destroy();
+	}
+}
 
 void ABaseCharacter::UsePowerupStartClient()
 {

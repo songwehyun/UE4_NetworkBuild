@@ -57,7 +57,27 @@ void AMasteringUnrealGameModeBase::Tick(float DeltaTime)
 				case EMatchState::EGameInProgress:
 				{
 					TimeSinceStart += DeltaTime;
+
+					for (auto &Player : PlatGameState->PlayerArray)
+					{
+						APlatformerPlayerState* PlatPlayer = Cast<APlatformerPlayerState>(Player);
+
+						if (PlatPlayer && !PlatPlayer->bSpectator)
+						{
+							if (PlatPlayer->GetCurrentHealth() <= 0)
+							{
+								APlayerController* PlayerController = PlatPlayer->GetNetOwningPlayer()->PlayerController;
+
+								PlatPlayer->PlayerRespawnedAfterDeath();
+
+								PlayerController->GetPawn()->Destroy();
+								PlayerController->ServerRestartPlayer();
+							}
+						}
+					}
 					PlatGameState->UpdateMatchTime(TimeSinceStart);
+
+					break;
 				}
 				default: 
 				{
