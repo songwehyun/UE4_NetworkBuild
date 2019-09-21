@@ -79,6 +79,10 @@ void AMasteringUnrealGameModeBase::Tick(float DeltaTime)
 
 					break;
 				}
+				case EMatchState::EGameComplete:
+				{
+					break;
+				}
 				default: 
 				{
 					//any other match state will reset timesince start to 0

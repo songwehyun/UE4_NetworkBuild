@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Powerup.h"
+#include "CanTakeDamage.h"
 #include "BaseCharacter.generated.h"
 
 
@@ -13,7 +14,7 @@ class UCameraComponent;
 class TraceDirection;
 
 UCLASS()
-class MASTERINGUNREAL_API ABaseCharacter : public ACharacter
+class MASTERINGUNREAL_API ABaseCharacter : public ACharacter , public ICanTakeDamage
 {
 	GENERATED_BODY()
 
@@ -60,8 +61,10 @@ public:
 		void NextPowerup();
 
 	/*데미지 함수*/
-	UFUNCTION(BlueprintCallable, Category = "Base Character")
+	UFUNCTION(BlueprintCallable,BlueprintNativeEvent, Category = "Base Character")
 		void ReceiveDamage(int amount);
+
+	virtual void ReceiveDamage_Implementation(int amount) override;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

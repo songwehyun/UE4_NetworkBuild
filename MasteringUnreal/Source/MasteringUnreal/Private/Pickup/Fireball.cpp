@@ -2,7 +2,7 @@
 
 
 #include "Fireball.h"
-
+#include "CanTakeDamage.h"
 // Sets default values
 AFireball::AFireball()
 {
@@ -99,12 +99,14 @@ void AFireball::PostInitializeComponents()
 void AFireball::OnHitActor(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& Hit)
 {
-	ABaseCharacter* Character = Cast<ABaseCharacter>(OtherActor);
+	ICanTakeDamage* Character = Cast<ICanTakeDamage>(OtherActor);
+	ICanTakeDamage* Owner = Cast<ICanTakeDamage>(TheOwner);
+
 
 	//파이어볼은 오너가 있고 오너는 히트 캐릭터가 아니란것을 확실시함.
-	if (TheOwner && Character && TheOwner != Character)
+	if (Owner && Character && Owner != Character)
 	{
-		Character->ReceiveDamage(1);
+		Character->Execute_ReceiveDamage(OtherActor,1);
 		this->Destroy();
 	}
 }

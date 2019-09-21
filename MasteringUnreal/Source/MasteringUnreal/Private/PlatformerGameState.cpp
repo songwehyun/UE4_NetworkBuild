@@ -22,6 +22,7 @@ void APlatformerGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> 
 
 	DOREPLIFETIME(APlatformerGameState, CurrentMatchState);
 	DOREPLIFETIME(APlatformerGameState, TotalMatchTime);
+	DOREPLIFETIME(APlatformerGameState, Winner);
 }
 
 void APlatformerGameState::ChangeState_Implementation(EMatchState newState)
@@ -32,6 +33,19 @@ void APlatformerGameState::ChangeState_Implementation(EMatchState newState)
 	}
 }
 
+
+void APlatformerGameState::SetWinner_Implementation(APlayerState* NewWinner)
+{
+	if (Role = ROLE_Authority)
+	{
+		Winner = NewWinner;
+	}
+}
+
+bool APlatformerGameState::SetWinner_Validate(APlayerState* NewWinner)
+{
+	return true;
+}
 EMatchState APlatformerGameState::GetMatchState()
 {
 	return CurrentMatchState;
@@ -132,6 +146,22 @@ void APlatformerGameState::EnterState(EMatchState newState)
 	}
 	case EMatchState::EGameComplete: 
 	{
+		UPlatformerGameInstance* GameInstance = Cast<UPlatformerGameInstance>(GetWorld()->GetGameInstance());
+
+		if (Role == ROLE_Authority)
+		{
+			for (auto &player : PlayerArray)
+			{
+				APlayerController* PC = player->GetNetOwningPlayer()->PlayerController;
+
+				PC->GetPawn()->Destroy();
+				PC->ServerRestartPlayer();
+			}
+		}
+
+		CurrentWidget = CreateWidget<UUserWidget>(GetWorld()->GetFirstPlayerController(), cGameComplete);
+		CurrentWidget->AddToViewport();
+		GameInstance->SetInputMode(EInputMode::EUIOnly, true);
 		break;
 	}
 	case EMatchState::ERestartingGame: 
@@ -148,6 +178,7 @@ void APlatformerGameState::EnterState(EMatchState newState)
 
 		if (Role == ROLE_Authority)
 		{
+			Winner = nullptr;
 			//respawn all conneted players if we're the server
 			for (auto &player : PlayerArray)
 			{

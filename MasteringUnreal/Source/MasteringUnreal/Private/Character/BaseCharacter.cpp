@@ -140,7 +140,7 @@ bool ABaseCharacter::PowerupUsed_Validate()
 {
 	return true;
 }
-void ABaseCharacter::ReceiveDamage(int amount)
+void ABaseCharacter::ReceiveDamage_Implementation(int amount)
 {
 	APlatformerPlayerState* PS = Cast<APlatformerPlayerState>(GetPlayerState());
 

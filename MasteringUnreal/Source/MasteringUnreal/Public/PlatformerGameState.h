@@ -63,6 +63,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
 		TSubclassOf<class UUserWidget> cChangingLevel;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
+		TSubclassOf<class UUserWidget> cGameComplete;
 	//Character list we'll specify in the editor:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
 		TArray<FCharacterSpecification> Characters;
@@ -81,6 +83,12 @@ public:
 
 	UFUNCTION(Server, Reliable, WithValidation, Category = "Match State")
 		void UpdateMatchTime(float NewTime);
+
+	UPROPERTY(Replicated, BlueprintReadOnly)
+		APlayerState* Winner;
+
+	UFUNCTION(BlueprintCallable, Server, WithValidation, Reliable, Category = "Match State")
+		void SetWinner(APlayerState* NewWinner);
 private:
 	//the currently displayed widget
 	UUserWidget* CurrentWidget;
